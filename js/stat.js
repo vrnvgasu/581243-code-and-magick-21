@@ -15,19 +15,13 @@ let renderCloud = (ctx, x, y, color) => {
   ctx.fillRect(x, y, CLOUD_WIDTH, CLOUD_HEIGHT);
 };
 
-let getMaxElement = (arr) => {
-  let maxElement = arr[0];
-
-  for (let i = 1; i < arr.length; i++) {
-    if (arr[i] > maxElement) {
-      maxElement = arr[i];
-    }
-  }
-
-  return maxElement;
+let getMaxElement = (items) => {
+  return items.reduce((acc, val) => {
+    return acc > val ? acc : val;
+  });
 };
 
-window.renderStatistics = (ctx, players, times) => {
+let renderResultCloud = (ctx) => {
   renderCloud(
       ctx,
       CLOUD_X + GAP,
@@ -54,36 +48,58 @@ window.renderStatistics = (ctx, players, times) => {
       CLOUD_X + CONTENT_GAP,
       CLOUD_Y + CONTENT_GAP * 2
   );
+};
 
+let renderBar = (ctx, playerBar, i, time) => {
+  ctx.fillRect(
+      CLOUD_X + BAR_GAP + (BAR_WIDTH + BAR_GAP) * i,
+      CLOUD_HEIGHT - CONTENT_GAP - GAP - playerBar,
+      BAR_WIDTH,
+      playerBar
+  );
+
+  ctx.fillStyle = `#000`;
+  ctx.fillText(
+      Math.round(time),
+      CLOUD_X + BAR_GAP + (BAR_WIDTH + BAR_GAP) * i,
+      CLOUD_HEIGHT - CONTENT_GAP - GAP - playerBar - GAP * 2
+  );
+};
+
+let defineColumnColor = (ctx, player) => {
+  let color = `hsl(240, ${Math.round(Math.random()) * 100}%, 50%)`;
+
+  if (player === `Вы`) {
+    color = `rgba(255, 0, 0, 1)`;
+  }
+
+  return color;
+};
+
+let renderPlayer = (ctx, player, i) => {
+  ctx.fillStyle = `#000`;
+  ctx.fillText(
+      player,
+      CLOUD_X + BAR_GAP + (BAR_WIDTH + BAR_GAP) * i,
+      CLOUD_HEIGHT - CONTENT_GAP
+  );
+};
+
+let renderResultDiagram = (ctx, players, times) => {
   let maxTime = getMaxElement(times);
 
-  for (let i = 0; i < players.length; i++) {
-    ctx.fillStyle = `#000`;
-    ctx.fillText(
-        players[i],
-        CLOUD_X + BAR_GAP + (BAR_WIDTH + BAR_GAP) * i,
-        CLOUD_HEIGHT - CONTENT_GAP
-    );
+  players.forEach((player, i) => {
+    renderPlayer(ctx, players, i);
 
-    ctx.fillStyle = `hsl(240, ${Math.round(Math.random()) * 100}%, 50%)`;
-
-    if (players[i] === `Вы`) {
-      ctx.fillStyle = `rgba(255, 0, 0, 1)`;
-    }
+    ctx.fillStyle = defineColumnColor(ctx, player);
 
     let playerBar = BAR_HEIGHT * times[i] / maxTime;
-    ctx.fillRect(
-        CLOUD_X + BAR_GAP + (BAR_WIDTH + BAR_GAP) * i,
-        CLOUD_HEIGHT - CONTENT_GAP - GAP - playerBar,
-        BAR_WIDTH,
-        playerBar
-    );
 
-    ctx.fillStyle = `#000`;
-    ctx.fillText(
-        Math.round(times[i]),
-        CLOUD_X + BAR_GAP + (BAR_WIDTH + BAR_GAP) * i,
-        CLOUD_HEIGHT - CONTENT_GAP - GAP - playerBar - GAP * 2
-    );
-  }
+    renderBar(ctx, playerBar, i, times[i]);
+  });
+};
+
+window.renderStatistics = (ctx, players, times) => {
+  renderResultCloud(ctx);
+  renderResultDiagram(ctx, players, times);
 };
